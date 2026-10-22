@@ -1,0 +1,25 @@
+# I will ignore my virtual environment
+.venv/
+
+# I will ignore Python cache files
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# I will ignore notebook checkpoints
+.ipynb_checkpoints/
+
+# I will ignore all downloaded data, but keep the download script and notes
+data/*
+!data/README.md
+!data/download.py
+!data/checksums.txt
+
+# I will ignore large data file types anywhere in the repo
+*.parquet
+*.feather
+*.pkl
+
+# I will ignore editor and system files
+.vscode/
+.DS_Store
