@@ -1,0 +1,56 @@
+# Project 1 config: this file is the single source of truth for my experiments.
+
+dataset:
+  name: NF-UNSW-NB15-v2
+  parquet: data/processed/nf_unsw_nb15_v2.parquet
+  label_binary: Label        # 0 = benign, 1 = attack
+  label_multiclass: Attack
+
+# I keep these columns out of the model (IPs and source port are never features).
+excluded_features:
+  - IPV4_SRC_ADDR
+  - IPV4_DST_ADDR
+  - L4_SRC_PORT
+  - Label
+  - Attack
+  - DNS_QUERY_ID   # I exclude it as an identifier; my leakage check found no shortcut in it.
+
+# I run a second baseline without these columns, because TTL almost perfectly
+# separates attacks from benign flows in this dataset (single-column AUC about 0.997).
+ablation_drop_columns:
+  - MAX_TTL
+  - MIN_TTL
+  - MIN_IP_PKT_LEN   # I will check this one on Day 2 before I finalise the list.
+
+split:
+  type: stratified           # the file has no timestamp, so I cannot split by time
+  test_size: 0.3
+  seed: 0
+
+seeds: [0, 1, 2, 3, 4]
+
+budgets: [1.0, 0.5, 0.2, 0.1, 0.05, 0.01, 0.001]
+
+sampling:
+  policies: [uniform, host_keyed, stratified, attack_aware]
+  # I key policy B on the (src, dst) pair because only 40 source IPs exist.
+  host_key_columns: [IPV4_SRC_ADDR, IPV4_DST_ADDR]
+
+campaigns:
+  # Primary definition: (attack class, source IP, destination IP).
+  primary_columns: [Attack, IPV4_SRC_ADDR, IPV4_DST_ADDR]
+  min_flows: 10
+  # Sensitivity check: the coarser (attack class, source IP) definition.
+  coarse_columns: [Attack, IPV4_SRC_ADDR]
+
+models:
+  logreg:
+    max_iter: 1000
+  random_forest:
+    n_estimators: 100
+    max_depth: 20
+    n_jobs: -1
+  lightgbm:
+    n_estimators: 200
+    learning_rate: 0.1
+    num_leaves: 31
