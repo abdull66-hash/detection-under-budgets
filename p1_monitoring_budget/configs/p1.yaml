@@ -6,22 +6,31 @@ dataset:
   label_binary: Label        # 0 = benign, 1 = attack
   label_multiclass: Attack
 
-# I keep these columns out of the model (IPs and source port are never features).
+# Columns the models never use (IDs, IPs, ports, labels).
 excluded_features:
   - IPV4_SRC_ADDR
   - IPV4_DST_ADDR
   - L4_SRC_PORT
   - Label
   - Attack
-  - DNS_QUERY_ID   # I exclude it as an identifier; my leakage check found no shortcut in it.
+  - DNS_QUERY_ID
 
-# I run a second baseline without these columns, because TTL almost perfectly
-# separates attacks from benign flows in this dataset (single-column AUC about 0.997).
-ablation_drop_columns:
-  - MAX_TTL
+# Columns dropped in the main runs.
+# TTL separates attacks from benign flows too well, and the dataset authors dropped it too.
+main_run_drop:
   - MIN_TTL
-  - MIN_IP_PKT_LEN   # I will check this one on Day 2 before I finalise the list.
+  - MAX_TTL
 
+# A second run keeps these columns, to show how much they change the results.
+sensitivity_run_keep:
+  - MIN_TTL
+  - MAX_TTL
+
+# Columns to test on Day 2 before deciding to drop them.
+to_check:
+  - MIN_IP_PKT_LEN
+  - DNS_TTL_ANSWER
+  
 split:
   type: stratified           # the file has no timestamp, so I cannot split by time
   test_size: 0.3
