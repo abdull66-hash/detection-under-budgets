@@ -32,9 +32,10 @@ to_check:
   - DNS_TTL_ANSWER
   
 split:
-  type: stratified           # the file has no timestamp, so I cannot split by time
-  test_size: 0.3
-  seed: 0
+  type: stratified    # no timestamp in the file, so no split by time
+  test_size: 0.3      # share of all data used for testing
+  scorer_size: 0.1    # share of all data used only for the policy D scorer
+  seed: 0             # the split is fixed, the 5 seeds change sampling and models
 
 seeds: [0, 1, 2, 3, 4]
 
