@@ -40,6 +40,6 @@ Record: https://doi.org/10.48610/ffbb0c1
 
 The feature set is described in: Sarhan, Layeghy, Portmann, "Towards a Standard Feature Set for Network Intrusion Detection System Datasets", arXiv:2101.11315.
 
-### To do
+### Check the download
 
-- Add the SHA1 checksum of the CSV to `checksums.txt`.
+Run `python data/download.py`. It compares the SHA1 of `NF-UNSW-NB15-v2.csv` with the official value in `checksums.txt`. If the file is missing, it prints how to download it.
