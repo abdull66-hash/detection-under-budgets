@@ -167,7 +167,7 @@ The dataset has no timestamps, only four attacker IPs, and a small number of cam
 4. **Class balancing** only in the training set (Alikhanov 2022). The test set keeps the natural class ratio (Pendlebury 2019).
 5. **Two training regimes** (Carela report). I do not claim this as a difference to Alikhanov et al., because their regime is unclear.
 6. **Features:** drop IDs, IPs and ports (Sarhan 2021). Drop the TTL features in the main runs and keep a second run with them (Sarhan 2021, my EDA).
-7. **Day 2 sanity check:** my full-data baseline with TTL dropped should be close to Sarhan's numbers in section 3. If it is much higher or lower, I look for leakage or a bug.
+7. **Day 2 sanity check:** my full-data binary baseline with TTL dropped should be in the range of Sarhan's binary numbers (detection rate 97.07%, false alarm rate 0.16%, F1 0.97). Their multi-class numbers are not comparable, because my per-class recall counts any attack flag, not the exact class.
 8. **Label check:** look at the attack flows for odd cases (Engelen 2021, Alikhanov 2022).
 9. **Small classes** (Worms has 164 flows): report counts next to every per-class result.
 

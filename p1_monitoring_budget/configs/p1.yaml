@@ -64,3 +64,6 @@ models:
     n_estimators: 200
     learning_rate: 0.1
     num_leaves: 31
+
+training:
+  class_weight: balanced   # gives attack flows more weight in training only; the test set is not changed
