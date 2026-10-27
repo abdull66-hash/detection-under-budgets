@@ -26,8 +26,8 @@ sensitivity_run_keep:
   - MIN_TTL
   - MAX_TTL
 
-# Columns to test on Day 2 before deciding to drop them.
-to_check:
+# Checked on Day 2: removing these changed recall by less than 0.001, so they stay in the main run.
+checked_and_kept:
   - MIN_IP_PKT_LEN
   - DNS_TTL_ANSWER
   
