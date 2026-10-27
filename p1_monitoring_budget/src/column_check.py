@@ -28,7 +28,7 @@ def run_check():
 
     # The main feature set is the starting point
     main_cols = get_feature_columns(df, config, "main")
-    to_check = config["to_check"]
+    to_check = config["checked_and_kept"]
 
     # One variant without each column, and one without both
     variants = {}
