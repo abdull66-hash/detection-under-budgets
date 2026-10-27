@@ -1,0 +1,9 @@
+model,variant,recall,fpr,pr_auc,macro_f1,d_recall,d_pr_auc
+lightgbm,main,0.9977,0.0041,0.9918,0.9745,0.0,0.0
+lightgbm,without_DNS_TTL_ANSWER,0.9974,0.0041,0.9919,0.9744,-0.0003,0.0001
+lightgbm,without_MIN_IP_PKT_LEN,0.9978,0.0041,0.9919,0.9746,0.0002,0.0001
+lightgbm,without_both,0.9978,0.0041,0.9922,0.9746,0.0001,0.0005
+random_forest,main,0.9982,0.004,0.9928,0.9756,0.0,0.0
+random_forest,without_DNS_TTL_ANSWER,0.9981,0.0039,0.9929,0.9758,-0.0001,0.0001
+random_forest,without_MIN_IP_PKT_LEN,0.9979,0.0039,0.993,0.9761,-0.0003,0.0002
+random_forest,without_both,0.9981,0.0039,0.9929,0.9761,-0.0002,0.0001
