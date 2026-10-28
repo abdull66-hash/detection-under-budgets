@@ -45,6 +45,7 @@ sampling:
   policies: [uniform, host_keyed, stratified, attack_aware]
   # I key policy B on the (src, dst) pair because only 40 source IPs exist.
   host_key_columns: [IPV4_SRC_ADDR, IPV4_DST_ADDR]
+  min_per_stratum: 1   # smallest number of flows kept from each stratum
 
 campaigns:
   # Primary definition: (attack class, source IP, destination IP).
