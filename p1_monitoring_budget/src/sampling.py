@@ -4,6 +4,7 @@ import hashlib
 
 import numpy as np
 import pandas as pd
+from sklearn.tree import DecisionTreeClassifier
 
 
 def uniform_mask(n_flows, budget, seed):
@@ -75,3 +76,43 @@ def make_mask(policy, df, budget, seed, config):
     if policy == "stratified":
         return stratified_mask(df, budget, seed, config["sampling"]["min_per_stratum"])
     raise ValueError(f"Unknown policy: {policy}")
+
+
+def train_scorer(scorer_df, config, seed):
+    # A very small decision tree that reads only a few fields
+    columns = config["sampling"]["scorer_features"]
+    tree = DecisionTreeClassifier(max_depth=config["sampling"]["scorer_depth"], random_state=seed)
+    tree.fit(scorer_df[columns], scorer_df["Label"])
+    return tree
+
+
+def suspicion_scores(tree, df, config):
+    # Probability of attack for every flow
+    columns = config["sampling"]["scorer_features"]
+    return tree.predict_proba(df[columns])[:, 1]
+
+
+def attack_aware_mask(suspicion, budget, seed, floor):
+    n = len(suspicion)
+
+    # Full budget keeps everything
+    if budget >= 1.0:
+        return np.ones(n, dtype=bool)
+
+    # Every flow gets a small minimum weight
+    weight = floor + (1 - floor) * suspicion
+
+    # Find the factor c so that the expected number of kept flows equals budget * n
+    target = budget * n
+    low, high = 0.0, 1.0 / weight.min()
+    for _ in range(60):
+        mid = (low + high) / 2
+        if np.minimum(1.0, mid * weight).sum() < target:
+            low = mid
+        else:
+            high = mid
+
+    # Keep each flow with probability min(1, c * weight)
+    keep_prob = np.minimum(1.0, high * weight)
+    rng = np.random.default_rng(seed)
+    return rng.random(n) < keep_prob
