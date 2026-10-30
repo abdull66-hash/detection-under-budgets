@@ -71,3 +71,4 @@ models:
 
 training:
   class_weight: balanced   # gives attack flows more weight in training only; the test set is not changed
+  min_class_flows: 5       # regime (ii): a model is trained only if the sampled training set has this many flows of each class
