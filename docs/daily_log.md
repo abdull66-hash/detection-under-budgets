@@ -27,3 +27,10 @@
 - Found: uniform recall matches budget times full recall, as expected. Stratified is about 9 times better than uniform at 0.1% because 249 of 261 strata hold only attacks (a property of this dataset). Host-keyed has wide intervals, and at 0.1% it keeps no attack flows.
 - Failed: a floor of 5 flows per stratum used more than the 0.1% budget, so I changed it to 1. I checked the realized rate of every policy before running.
 - Next: Day 4. Write the attack-aware two-stage sampler, run regime (ii), build the campaigns and measure campaign-level detection.
+
+
+## Project 1, Day 4
+- Did: I wrote policy D (the attack-aware two-stage sampler) and campaign detection, both with tests (37 tests pass). I ran regime (i) with 4 policies and regime (ii) (train and test on sampled data). I made the tables with 95% intervals and the smallest budget for 90% campaign detection.
+- Found: policy D reaches 90% campaign detection at a 1% budget, uniform and stratified at 10%, host-keyed only at 100%. Uniform campaign detection matches the formula from campaign sizes within 0.02. Regime (ii) changes recall and campaign detection by at most 0.007. Policy D has a higher false positive rate than uniform at the same budget (0.0019 against 0.0002 at 5%).
+- Failed: my time estimates for the long runs were too low twice. The floor of 5 flows per stratum used more than the 0.1% budget, so I changed it to 1. I first thought campaign detection is always above recall, but host-keyed at 5% showed it is not.
+- Next: Day 5. Final figures (recall vs budget, campaign detection vs budget, policy comparison, minimum budget), the host-keyed spread with many mask seeds, and the report draft.
