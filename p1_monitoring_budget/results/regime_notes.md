@@ -27,3 +27,11 @@ Numbers: random forest, TTL dropped, mean over 5 seeds (see `results_summary.csv
 ## Limits
 - 243 primary and 35 coarse campaigns in the test set. The test set and the campaigns are fixed, so the intervals show training and sampling randomness only.
 - The models are near-perfect on full data, so recall under sampling is mostly set by how many attack flows are sampled.
+
+
+## Host-keyed spread (100 hash seeds, one random forest, regime i)
+- The test set has 286 host pairs. The mean recall over 100 hash seeds is close to uniform (0.0457 at 5%, 0.0968 at 10%, 0.4857 at 50%). The 5-seed mean of 0.4368 at 50% was within this spread, so it was chance.
+- The spread is wide. Recall is 0 for 98% of the hash seeds at a 0.1% budget, 68% at 1%, 13% at 5% and 1% at 10%. At 10%, 95% of the hash seeds give recall between 0.0168 and 0.2065. At 50% they give 0.3366 to 0.6001.
+- Realized rate: at a 0.1% budget it ranges from 0 to 0.0193, at 1% from 0 to 0.0585. The budget is nominal for this policy.
+- Primary campaign detection is almost the same as recall, because the campaign key contains the same (source, destination) pair as the sampling key.
+- Only one trained model (seed 0) was used, so the spread comes from the hash seed only.
