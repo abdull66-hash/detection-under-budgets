@@ -2,7 +2,9 @@
 
 import matplotlib.pyplot as plt
 import pandas as pd
+import numpy as np
 
+from p1_monitoring_budget.src.preprocess import load_clean_data, load_config, split_data
 from common.io import REPO_ROOT
 from common.plotting import save_figure, set_style
 
@@ -101,8 +103,63 @@ def figure_campaign():
     save_figure(fig, RESULTS_DIR / "fig2_campaign_vs_budget")
     plt.close(fig)
 
+def figure_tradeoff():
+    set_style()
+
+    # Random forest, main run, regime (i): mean over the 5 seeds, not rounded
+    raw = pd.read_csv(RESULTS_DIR / "regime1_raw.csv")
+    raw = raw[(raw["run"] == "main") & (raw["model"] == "random_forest")]
+    mean = raw.groupby(["policy", "budget"])[["recall", "fpr"]].mean().reset_index()
+
+    # Number of attack and benign flows in the test set
+    config = load_config()
+    df = load_clean_data(config)
+    train, scorer, test = split_data(df, config)
+    n_attack = int(test["Label"].sum())
+    n_benign = len(test) - n_attack
+
+    # Precision of the flagged flows: true alerts out of all alerts
+    true_alerts = mean["recall"] * n_attack
+    false_alerts = mean["fpr"] * n_benign
+    mean["precision"] = true_alerts / (true_alerts + false_alerts)
+
+    # Draw one line per policy. Each point is one budget.
+    fig, ax = plt.subplots(figsize=(7, 4.8))
+    labels = {"uniform": "uniform", "stratified": "stratified",
+              "attack_aware": "attack-aware (uses labels)", "host_keyed": "host-keyed (5 seeds)"}
+    for policy in ["uniform", "stratified", "attack_aware", "host_keyed"]:
+        color, marker = STYLE[policy]
+        # A log scale cannot show zero, so those points are left out
+        part = mean[(mean["policy"] == policy) & (mean["recall"] > 0) & (mean["fpr"] > 0)]
+        part = part.sort_values("budget")
+        ax.plot(part["fpr"], part["recall"], color=color, marker=marker, label=labels[policy])
+
+    # Dashed line: the trade-off of the full model (budget 1.0), extended to low values
+    full = mean[(mean["policy"] == "uniform") & (mean["budget"] == 1.0)].iloc[0]
+    ratio = full["recall"] / full["fpr"]
+    xs = np.array([mean.loc[mean["fpr"] > 0, "fpr"].min(), full["fpr"]])
+    ax.plot(xs, ratio * xs, linestyle="--", color="gray", label="same trade-off as the full model")
+
+    ax.set_xscale("log")
+    ax.set_yscale("log")
+    ax.set_xlabel("False positive rate (share of benign flows flagged, log scale)")
+    ax.set_ylabel("Attack recall (flow level, log scale)")
+    ax.set_title("Recall vs false positive rate (random forest, regime i)")
+    ax.legend(fontsize=8)
+    save_figure(fig, RESULTS_DIR / "fig3_recall_vs_fpr")
+    plt.close(fig)
+
+    # Tables, for budgets of 1% and above
+    shown = mean[mean["budget"] >= 0.01].copy()
+    shown["false_alarms_per_100k_benign"] = (shown["fpr"] * 100_000).round(1)
+    print("precision of the flagged flows (true alerts out of all alerts)")
+    print(shown.pivot(index="policy", columns="budget", values="precision").round(3).to_string())
+    print()
+    print("false alarms per 100,000 benign flows")
+    print(shown.pivot(index="policy", columns="budget", values="false_alarms_per_100k_benign").to_string())
 
 if __name__ == "__main__":
     figure_recall()
     figure_campaign()
-    print("Saved fig1_recall_vs_budget and fig2_campaign_vs_budget")
+    figure_tradeoff()
+    print("Saved fig1, fig2 and fig3")
