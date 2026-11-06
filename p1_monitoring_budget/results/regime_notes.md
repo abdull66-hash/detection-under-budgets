@@ -14,7 +14,11 @@ Numbers: random forest, TTL dropped, mean over 5 seeds (see `results_summary.csv
 ## Policy D (attack-aware)
 - Smallest budget with 90% primary campaign detection: policy D 1%, uniform 10%, stratified 10%, host-keyed 100%. Coarse: policy D 1%, uniform 5%, stratified 5%, host-keyed 50%.
 - Recall at a 5% budget: policy D 0.4747, uniform 0.0500.
-- Cost: the false positive rate at a 5% budget is 0.0019 for policy D and 0.0002 for uniform (regime i). Policy D keeps the benign flows that look most like attacks.
+- False alarms: at the same budget policy D raises more false alarms than uniform (190.7 against 20.9 per 100,000 benign flows at a 5% budget), and it finds about 9 times more attacks (recall 0.4747 against 0.0500). The precision of the flagged flows is the same: 0.912 for policy D, 0.908 for uniform and 0.912 for the full model at 5%. So policy D adds no false alarms per detection.
+- Policy D at a 1% budget gives about the same recall and false alarms as uniform at 10% (recall 0.0949 against 0.0997, false alarms 37.8 against 40.9 per 100,000). The gain is fewer flows sent to the detector for the same detection, not better alerts.
+- At a 50% budget policy D keeps 76% of the false alarms of the full model (303.4 of 398.0 per 100,000). Uniform keeps 50%.
+- Stratified has higher precision at low budgets (0.948 at 1%, 0.927 at 5%). Likely reason (not tested): it adds attack flows from the attack-only strata without adding false alarms.
+- These bullets: random forest, TTL dropped, regime (i), 5-seed means.
 - Policy D uses labels: the scorer is trained with them. The scorer reads every flow, including the ones it drops, so policy D reduces what the detector receives, not what is looked at.
 - Part of the gain may come from this dataset: the attacks use rare port and protocol combinations that the scorer can find. Stratified shows the same pattern at 0.1%.
 
@@ -35,3 +39,4 @@ Numbers: random forest, TTL dropped, mean over 5 seeds (see `results_summary.csv
 - Realized rate: at a 0.1% budget it ranges from 0 to 0.0193, at 1% from 0 to 0.0585. The budget is nominal for this policy.
 - Primary campaign detection is almost the same as recall, because the campaign key contains the same (source, destination) pair as the sampling key.
 - Only one trained model (seed 0) was used, so the spread comes from the hash seed only.
+- The host-keyed minimum budget for 90% campaign detection (primary 1.0, coarse 0.5) comes from the 5-seed run. The 100-hash-seed check covers only the primary definition.
