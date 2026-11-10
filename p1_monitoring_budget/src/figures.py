@@ -1,17 +1,17 @@
-"""Figures for the report."""
+"""Figures for the report. Each figure also prints the numbers it plots."""
 
 import matplotlib.pyplot as plt
-import pandas as pd
 import numpy as np
+import pandas as pd
 
-from p1_monitoring_budget.src.preprocess import load_clean_data, load_config, split_data
 from common.io import REPO_ROOT
 from common.plotting import save_figure, set_style
+from p1_monitoring_budget.src.preprocess import load_clean_data, load_config, split_data
 
 # Folder for the result files
 RESULTS_DIR = REPO_ROOT / "p1_monitoring_budget" / "results"
 
-# Color and marker for each policy
+# Color and marker for each policy (the same in every figure)
 STYLE = {
     "uniform": ("tab:blue", "o"),
     "stratified": ("tab:green", "s"),
@@ -41,6 +41,9 @@ def host_keyed_band(metric):
 
 
 def draw_policies(ax, rf, metric):
+    # Remember every plotted number, so it can be printed
+    plotted = []
+
     # Three policies with 5 seeds: mean and 95% interval
     for policy in ["uniform", "stratified", "attack_aware"]:
         color, marker = STYLE[policy]
@@ -49,42 +52,62 @@ def draw_policies(ax, rf, metric):
         above = (part[metric + "_high"] - part[metric]).clip(lower=0)
         ax.errorbar(part["budget"], part[metric], yerr=[below, above],
                     color=color, marker=marker, capsize=3, label=LABELS[policy])
+        for _, r in part.iterrows():
+            plotted.append({"policy": policy, "budget": r["budget"], "mean": r[metric],
+                            "low": r[metric + "_low"], "high": r[metric + "_high"]})
 
     # Host-keyed: mean and a band between the 2.5% and 97.5% percentiles
     band = host_keyed_band(metric)
     color, marker = STYLE["host_keyed"]
     ax.plot(band["budget"], band["mean"], color=color, marker=marker, label=LABELS["host_keyed"])
     ax.fill_between(band["budget"], band["low"], band["high"], color=color, alpha=0.2)
+    for _, r in band.iterrows():
+        plotted.append({"policy": "host_keyed", "budget": r["budget"], "mean": r["mean"],
+                        "low": r["low"], "high": r["high"]})
+    return pd.DataFrame(plotted)
+
+
+def print_plotted(title, plotted):
+    # Print the plotted numbers: one line per policy and budget
+    print(title)
+    print(plotted.round(4).to_string(index=False))
+    print()
+
+
+def legend_outside(ax):
+    # Put the legend to the right of the plot so it hides nothing
+    ax.legend(fontsize=8, loc="center left", bbox_to_anchor=(1.02, 0.5), frameon=False)
 
 
 def figure_recall():
     set_style()
     rf = load_rf()
-    fig, ax = plt.subplots(figsize=(7, 4.8))
-    draw_policies(ax, rf, "recall")
+    fig, ax = plt.subplots(figsize=(8.5, 4.8))
+    plotted = draw_policies(ax, rf, "recall")
 
     # Dashed line: recall equal to the budget
     ax.plot([0.001, 1], [0.001, 1], linestyle="--", color="gray", label="recall = budget")
 
     # Log scale for the budget. Symlog for recall so that 0 can be shown.
     ax.set_xscale("log")
-    ax.set_yscale("symlog", linthresh=1e-3)
+    ax.set_yscale("symlog", linthresh=1e-4)
     ax.set_ylim(0, 1.2)
-    ax.set_yticks([0, 0.001, 0.01, 0.1, 1])
-    ax.set_yticklabels(["0", "0.001", "0.01", "0.1", "1"])
+    ax.set_yticks([0, 1e-4, 1e-3, 1e-2, 0.1, 1])
+    ax.set_yticklabels(["0", "0.0001", "0.001", "0.01", "0.1", "1"])
     ax.set_xlabel("Budget (share of flows kept, log scale)")
     ax.set_ylabel("Attack recall (flow level, symlog scale)")
     ax.set_title("Flow-level recall vs budget (random forest, regime i)")
-    ax.legend(fontsize=8)
+    legend_outside(ax)
     save_figure(fig, RESULTS_DIR / "fig1_recall_vs_budget")
     plt.close(fig)
+    print_plotted("Figure 1: recall (mean, low, high)", plotted)
 
 
 def figure_campaign():
     set_style()
     rf = load_rf()
-    fig, ax = plt.subplots(figsize=(7, 4.8))
-    draw_policies(ax, rf, "campaign_primary")
+    fig, ax = plt.subplots(figsize=(8.5, 4.8))
+    plotted = draw_policies(ax, rf, "campaign_primary")
 
     # Dotted line: expected value for uniform sampling from the campaign sizes
     check = pd.read_csv(RESULTS_DIR / "uniform_check.csv")
@@ -99,9 +122,14 @@ def figure_campaign():
     ax.set_xlabel("Budget (share of flows kept, log scale)")
     ax.set_ylabel("Campaigns detected (share, primary definition)")
     ax.set_title("Campaign-level detection vs budget (random forest, regime i)")
-    ax.legend(fontsize=8)
+    legend_outside(ax)
     save_figure(fig, RESULTS_DIR / "fig2_campaign_vs_budget")
     plt.close(fig)
+    print_plotted("Figure 2: primary campaigns detected (mean, low, high)", plotted)
+    print("Figure 2: formula line for uniform sampling")
+    print(check[["budget", "expected"]].to_string(index=False))
+    print()
+
 
 def figure_tradeoff():
     set_style()
@@ -124,7 +152,7 @@ def figure_tradeoff():
     mean["precision"] = true_alerts / (true_alerts + false_alerts)
 
     # Draw one line per policy. Each point is one budget.
-    fig, ax = plt.subplots(figsize=(7, 4.8))
+    fig, ax = plt.subplots(figsize=(8.5, 4.8))
     labels = {"uniform": "uniform", "stratified": "stratified",
               "attack_aware": "attack-aware (uses labels)", "host_keyed": "host-keyed (5 seeds)"}
     for policy in ["uniform", "stratified", "attack_aware", "host_keyed"]:
@@ -145,18 +173,17 @@ def figure_tradeoff():
     ax.set_xlabel("False positive rate (share of benign flows flagged, log scale)")
     ax.set_ylabel("Attack recall (flow level, log scale)")
     ax.set_title("Recall vs false positive rate (random forest, regime i)")
-    ax.legend(fontsize=8)
+    legend_outside(ax)
     save_figure(fig, RESULTS_DIR / "fig3_recall_vs_fpr")
     plt.close(fig)
 
-    # Tables, for budgets of 1% and above
-    shown = mean[mean["budget"] >= 0.01].copy()
-    shown["false_alarms_per_100k_benign"] = (shown["fpr"] * 100_000).round(1)
-    print("precision of the flagged flows (true alerts out of all alerts)")
-    print(shown.pivot(index="policy", columns="budget", values="precision").round(3).to_string())
+    # Print every point of the table behind the figure
+    points = mean.sort_values(["policy", "budget"]).copy()
+    points["false_alarms_per_100k"] = (points["fpr"] * 100_000).round(2)
+    print("Figure 3: points (5-seed means). Points with recall 0 or no false alarms are not drawn.")
+    print(points[["policy", "budget", "false_alarms_per_100k", "recall", "precision"]].round(4).to_string(index=False))
     print()
-    print("false alarms per 100,000 benign flows")
-    print(shown.pivot(index="policy", columns="budget", values="false_alarms_per_100k_benign").to_string())
+
 
 if __name__ == "__main__":
     figure_recall()

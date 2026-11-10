@@ -40,3 +40,19 @@ Numbers: random forest, TTL dropped, mean over 5 seeds (see `results_summary.csv
 - Primary campaign detection is almost the same as recall, because the campaign key contains the same (source, destination) pair as the sampling key.
 - Only one trained model (seed 0) was used, so the spread comes from the hash seed only.
 - The host-keyed minimum budget for 90% campaign detection (primary 1.0, coarse 0.5) comes from the 5-seed run. The 100-hash-seed check covers only the primary definition.
+
+
+## Other models (regime i, main run, 5-seed means)
+- Recall and campaign detection at 1% and 5% budgets are about the same for logistic regression, random forest and LightGBM. Recall at 5%, uniform: 0.0499, 0.0500, 0.0500. Policy D: 0.4726, 0.4747, 0.4744.
+- Logistic regression raises more false alarms: uniform at 5% gives 85.8 per 100,000 benign flows, against 20.9 for random forest and 21.9 for LightGBM.
+- Keeping the TTL columns changes recall by at most 0.0001 for random forest, and false alarms by at most 1.5 per 100,000 (uniform at 5%: 20.9 without TTL, 20.2 with TTL).
+
+## Recall for each attack class at a 5% budget (random forest, regime i)
+- Uniform: 0.049 to 0.061 for every class. The highest is Worms (0.0612), with only 49 test flows.
+- Policy D: Backdoor 0.931, Analysis 0.838, Worms 0.812, Fuzzers 0.645, DoS 0.611, Reconnaissance 0.586, Shellcode 0.464, Exploits 0.346, Generic 0.244.
+- Policy D's gain is uneven. Generic and Exploits gain the least. The cause is not checked yet.
+- With no sampling, recall is at least 0.990 for every class (lowest: Analysis, 0.9901).
+
+## Lowest budgets (random forest, main run)
+- At a 0.1% budget, uniform, stratified and policy D sample 714 to 717 flows. Host-keyed keeps 1,398 on average (nominal budget: 717).
+- False alarms at 0.1%: uniform 0.17, stratified 0.23, policy D 2.88 per 100,000 benign flows, which is about 1, 2 and 20 flows. Results at 0.1% rest on very few false alarms.

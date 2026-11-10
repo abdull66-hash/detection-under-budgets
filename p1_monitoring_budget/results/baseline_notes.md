@@ -20,7 +20,7 @@ My random forest has recall 99.8% and a false positive rate of 0.40%. This is th
 
 ## Label check (see `label_check.csv`)
 
-36,377 of 95,053 attack flows (38%) return zero bytes, against 0.7% of benign flows. In Analysis, Backdoor and Generic, more than 80% of the flows return zero bytes. These may be real probes or "attempted attack" flows, and I cannot prove which. All flows are kept. Flow duration is 0 ms for most flows in every class, so it carries almost no information.
+36,377 of 95,053 attack flows (38%) return zero bytes, against 0.7% of benign flows. In Analysis, Backdoor and Generic, more than 80% of the flows return zero bytes. These may be real probes or "attempted attack" flows, and I cannot prove which. All flows are kept. Flow duration is 0 ms for 94% of benign flows and for 83% to 96% of the flows in each attack class. All other flows have a duration between 4,293,920 and 4,294,965 ms (median 4,294,951), which is close to 2^32 / 1000 = 4,294,967 ms. So the column acts like a yes/no flag, not a real duration. It is non-zero for 5.9% of benign flows and 10.5% of attack flows. The cause is not confirmed.
 
 ## Column check (see `column_check_table.csv`)
 

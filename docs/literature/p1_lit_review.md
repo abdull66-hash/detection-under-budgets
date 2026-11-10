@@ -182,6 +182,7 @@ The dataset has no timestamps, only four attacker IPs, and a small number of cam
 | 5 | Definition of a campaign | No paper I read defines it for ML detectors. | Define it in `p1.yaml` (done) and in the README. Report both definitions. | Day 4 |
 | 6 | Flow-record sampling vs packet sampling | The dataset has no packets. | State it as a limitation. Compare with Mai's random flow sampling. Make no claim about packet effects. | Report |
 | 7 | Training regime in Alikhanov et al. | The text is unclear. | Run both of my regimes. Do not claim this as a difference. | Day 3 and 4 |
+| 8 | Why flow duration is either 0 or about 4,294,950 ms | The value is close to 2^32 / 1000 = 4,294,967, which suggests a counter limit, but I found no source that says so. | Treat the column as a yes/no flag. Make no claim about the cause. Keep it as a feature. | Report |
 
 ## 8. Reference list
 
