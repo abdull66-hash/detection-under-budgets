@@ -56,3 +56,12 @@ Numbers: random forest, TTL dropped, mean over 5 seeds (see `results_summary.csv
 ## Lowest budgets (random forest, main run)
 - At a 0.1% budget, uniform, stratified and policy D sample 714 to 717 flows. Host-keyed keeps 1,398 on average (nominal budget: 717).
 - False alarms at 0.1%: uniform 0.17, stratified 0.23, policy D 2.88 per 100,000 benign flows, which is about 1, 2 and 20 flows. Results at 0.1% rest on very few false alarms.
+
+## The attack-aware scorer (checked with inspect_scorer.py)
+- The scorer is a depth-3 decision tree with 8 leaves. It is the same tree for seeds 0 to 4. It splits on 4 of the 5 listed fields: IN_PKTS (importance 0.593), L4_DST_PORT (0.294), TCP_FLAGS (0.085) and IN_BYTES (0.028). PROTOCOL is listed but never used.
+- A flow's keep probability depends only on its leaf. At a 5% budget: leaf 3 is 1.0, leaf 11 is 0.861, leaf 10 is 0.056 and leaf 13 is 0.022.
+- Leaf 3 (destination port <= 10, IN_BYTES <= 528, IN_PKTS <= 2.5) holds 3,602 test flows, 99.83% of them attacks (3,596 attack flows, 12.6% of the 28,516). Seven classes put 458 to 549 flows each into it: Analysis 536, Backdoor 481, DoS 532, Exploits 531, Fuzzers 549, Generic 509, Reconnaissance 458.
+- Leaves 10 and 13 hold 685,949 of the 688,567 benign test flows (99.6%). They are 4.5% and 1.2% attacks.
+- Per class, recall at a 5% budget follows the keep probabilities. Mean keep probability times recall without sampling is within 0.005 of the observed recall for 7 of 9 classes. Analysis is 0.0127 above (0.8250 expected, 0.8377 observed), cause not checked. Worms is 0.0343 above, with only 49 test flows, so chance can explain it.
+- Generic (recall 0.244) and Exploits (0.346) gain little because 70% of the Generic flows (3,495 of 4,968) are in leaf 10 and 56% of the Exploits flows (5,332 of 9,465) are in leaf 13. These leaves are mostly benign. Backdoor and Analysis have 74% and 78% of their flows in leaf 3.
+- A scorer that reads only 4 header fields cannot separate such attack flows from benign flows. A deeper scorer was not tested.
