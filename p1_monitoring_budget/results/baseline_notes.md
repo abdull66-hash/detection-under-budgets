@@ -16,7 +16,7 @@ With TTL kept (sensitivity run), random forest gives recall 0.9984 and PR-AUC 0.
 
 Sarhan et al. report for NF-UNSW-NB15-v2 (Extra Trees, TTL features dropped, 70/30 split, 5 cross-validation splits): detection rate 97.07% and false alarm rate 0.16%.
 
-My random forest has recall 99.8% and a false positive rate of 0.40%. This is the same range. My models flag more attacks and also more benign flows. The likely reasons are the balanced class weights, the fixed 0.5 threshold, and a different model. I do not compare the multi-class numbers, because my per-class recall counts any attack flag and theirs counts the exact class.
+My random forest has recall 99.8% and a false positive rate of 0.40%. Both are higher than theirs (97.07% and 0.16%): my models flag more attacks and also more benign flows. The likely reasons are the balanced class weights, the fixed 0.5 threshold, and a different model. I do not compare the multi-class numbers, because my per-class recall counts any attack flag and theirs counts the exact class.
 
 ## Label check (see `label_check.csv`)
 

@@ -1,6 +1,6 @@
 # Project 1 literature review: monitoring budget
 
-Last updated: 2026-10-24
+Last updated: 2026-11-12
 
 ## 1. How I did this review
 
@@ -146,7 +146,7 @@ Sampling is used in networks because monitoring everything costs too much (Duffi
 
 The closest work is Alikhanov et al. (2022). They sample packets from CIC-IDS-2018 at 1/10, 1/100 and 1/1000, compare four samplers and three ML classifiers, and score detection per flow while counting unseen flows as missed. They find that many malicious flows disappear and that detection and false alarms get worse.
 
-My project asks a similar question in a different setup. The data is NF-UNSW-NB15-v2 (NetFlow records, nine attack classes). Sampling is applied to flow records, not packets. I compare uniform, host-keyed, stratified and attack-aware two-stage sampling at the same budget, from 100% down to 0.1%, and I train the models in two ways (on full data and on sampled data). I report flow-level recall and also campaign-level detection (at least one flow of an attack campaign is caught). All results use 5 seeds with bootstrap confidence intervals.
+My project asks a similar question in a different setup. The data is NF-UNSW-NB15-v2 (NetFlow records, nine attack classes). Sampling is applied to flow records, not packets. I compare uniform, host-keyed, stratified and attack-aware two-stage sampling at the same budget, from 100% down to 0.1%, and I train the models in two ways (on full data and on sampled data). I report flow-level recall and also campaign-level detection (at least one flow of an attack campaign is caught). Results use 5 seeds with bootstrap confidence intervals (100 hash seeds for host-keyed sampling). The split into train, scorer and test sets is fixed.
 
 In the papers I read, I did not find a study that reports campaign-level detection for ML detectors under several sampling policies on a labelled multi-class flow dataset. The nearest idea is the scanner-level success ratio in Mai et al. I treat campaign-level detection as my own design choice and define it clearly in the README.
 

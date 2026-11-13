@@ -3,8 +3,8 @@
 Numbers: random forest, TTL dropped, mean over 5 seeds (see `results_summary.csv`). Budget = share of flows kept. The minimum budgets are on a 7-point grid: the smallest tested budget from which detection stays at or above 0.9.
 
 ## Regime (i) and regime (ii)
-- Recall and campaign detection are almost the same in both regimes (differences at most 0.007). Policy D at 1%: recall 0.0949 and 0.0931, primary campaign detection 0.9358 and 0.9333.
-- The false positive rate of policy D is lower in regime (ii): 0.0010 against 0.0019 at 5%, and 0.0015 against 0.0023 at 10%. The other policies are the same. Likely reason (not tested): policy D keeps benign flows that look like attacks, and a model trained on that sample learns to separate them.
+- For random forest, recall and campaign detection are almost the same in both regimes (differences at most 0.007). Policy D at 1%: recall 0.0949 and 0.0931, primary campaign detection 0.9358 and 0.9333. For LightGBM and logistic regression the differences at 1% and 5% budgets are at most 0.0091 (largest: LightGBM, stratified, campaigns at 5%: 0.8700 and 0.8609).
+- False alarms per 100,000 benign flows at a 5% budget, regime (i) to regime (ii). Policy D: 190.7 to 96.6 (random forest), 199.3 to 102.4 (LightGBM), 322.9 to 297.7 (logistic regression). Uniform: 20.9 to 19.5, 21.9 to 16.9, 85.8 to 87.1. Stratified: 18.9 to 18.4, 19.5 to 14.9, 82.9 to 80.8. Host-keyed: 14.6 to 10.6, 15.7 to 8.0, 63.2 to 53.1. Policy D drops by about half for both tree models and by 8% for logistic regression. The other policies change by +1% to -24% (host-keyed -16% to -49%, on few alerts). Likely reason for policy D (not tested): it keeps benign flows that look like attacks, and a model trained on that sample learns to separate them.
 - Carela-Español and Barlet-Ros found that training on sampled data helped a lot. Here it changes little. Possible reason (not tested): this dataset is easy to separate, even with few attack flows.
 
 ## Campaign detection
@@ -65,3 +65,9 @@ Numbers: random forest, TTL dropped, mean over 5 seeds (see `results_summary.csv
 - Per class, recall at a 5% budget follows the keep probabilities. Mean keep probability times recall without sampling is within 0.005 of the observed recall for 7 of 9 classes. Analysis is 0.0127 above (0.8250 expected, 0.8377 observed), cause not checked. Worms is 0.0343 above, with only 49 test flows, so chance can explain it.
 - Generic (recall 0.244) and Exploits (0.346) gain little because 70% of the Generic flows (3,495 of 4,968) are in leaf 10 and 56% of the Exploits flows (5,332 of 9,465) are in leaf 13. These leaves are mostly benign. Backdoor and Analysis have 74% and 78% of their flows in leaf 3.
 - A scorer that reads only 4 header fields cannot separate such attack flows from benign flows. A deeper scorer was not tested.
+
+
+## Leaf 3 of the scorer (checked with inspect_leaf3.py)
+- All 3,602 test flows in leaf 3 have destination port 0, IN_BYTES between 56 and 200 (median 200) and IN_PKTS 1 or 2. The protocol column holds many different IP protocol numbers (the most common is 1 with 72 flows, the next nine have 21 to 33 flows each).
+- Of the 3,540 flows in the attack-only strata, 3,494 (98.7%) are in leaf 3. So the stratified gain at a 0.1% budget and part of policy D's gain come from the same group of flows. The cause is not known.
+- Computed from the leaf tables: at a 5% budget policy D keeps about 13,560 attack flows. Leaf 3 gives about 3,596 (26%) and leaf 11 (port above 10, TCP flags up to 21, more than 6 incoming packets, 84% attacks) gives about 8,700 (64%). The expected recall from this is about 0.475 (observed 0.4747). So policy D finds two groups of header patterns, not one.
